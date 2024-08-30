@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import rasterio
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 def calculate_ndvi(nir_image, red_image):
     # Görüntüleri float32 formatına dönüştür

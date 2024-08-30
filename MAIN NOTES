@@ -3,5 +3,25 @@ AREA ANALYSIS BY NDVI AND OTHER PARAMETERS
 FEATURE COMBINING OTHER IMAGES AND CREATING MAPS VIA THIS WAY
 
 
+
+
 NDVI
 NDWI = (Green - NIR) / (Green + NIR)
+NDRE
+
+EVI (Enhanced Vegetation Index): NDVI'ye benzer, ancak atmosferik etkilerden daha az etkilenir. Bitki örtüsü yoğunluğunu daha doğru bir şekilde ölçmek için kullanılır.
+
+SAVI (Soil Adjusted Vegetation Index): Toprak etkisini azaltmak için tasarlanmış bir indekstir. Düşük bitki örtüsü yoğunluğuna sahip alanlarda, NDVI'ye göre daha hassas sonuçlar verebilir.
+
+GNDVI (Green Normalized Difference Vegetation Index): Yeşil bant ve yakın kızılötesi bant arasındaki farkı kullanarak bitki klorofil içeriğini değerlendirmeye yardımcı olur.
+
+NDRE (Normalized Difference Red Edge): Kızılötesi ve kırmızı kenar bantları arasındaki farkı kullanarak, bitki stresini ve azot seviyelerini değerlendirmek için kullanılır. NDVI'nin algılayamayacağı erken dönem bitki stresini tespit edebilir.
+
+MSAVI (Modified Soil-Adjusted Vegetation Index): SAVI'nin bir varyasyonudur ve toprak etkisinin daha fazla azaltılmasını sağlar.
+
+CWSI (Crop Water Stress Index): Bitkilerin su stresi altında olup olmadığını tespit etmek için kullanılan bir indekstir.
+
+LAI (Leaf Area Index): Bitki yapraklarının yüzey alanını ölçerek, bitkilerin büyüme ve gelişim potansiyelini değerlendirmek için kullanılır.
+
+BAI ()
+
