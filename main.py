@@ -36,7 +36,9 @@ class MyWindow(QMainWindow):
         
     def clicked(self):
         self.label.setText("")
-
+        
+    def clocked():
+        pass
 
 
 
