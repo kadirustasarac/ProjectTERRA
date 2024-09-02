@@ -24,8 +24,8 @@ def stitch_images(img1, img2):
     return img1_warp
 
 
-img1 = cv2.imread('gorsel1.jpg')
-img2 = cv2.imread('gorsel2.jpg')
+img1 = cv2.imread('images/first.JPG')
+img2 = cv2.imread('images/second.JPG')
 
 
 stitched_image = stitch_images(img1, img2)

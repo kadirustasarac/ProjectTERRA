@@ -18,9 +18,9 @@ def calculate_clg(nir_image, red_image):
     return clg
 
 
-def plot_clg(clre):
+def plot_clg(clg):
     plt.figure(figsize=(10, 10))
-    plt.imshow(clre, cmap='RdYlGn')
+    plt.imshow(clg, cmap='RdYlGn')
     plt.colorbar(label='Clg')
     plt.title('Clg Haritası')
     plt.show()
