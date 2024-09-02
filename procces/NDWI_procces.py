@@ -40,5 +40,5 @@ def process_images_and_generate_ndwi(nir_image_path, green_image_path):
     plot_ndwi(ndwi_image)
 
 # Örnek kullanım
-process_images_and_generate_ndwi('images/NIR2.TIF', 'images/GREEN2.TIF')
+process_images_and_generate_ndwi('images/NIR.TIF', 'images/GREEN.TIF')
 
