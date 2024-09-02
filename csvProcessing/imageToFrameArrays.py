@@ -1,104 +1,97 @@
 import rasterio
 import numpy as np
-import sqlite3
+import psycopg2
 
-# TIFF dosyasının yolu
-tiff_file = r'C:\Users\W10\Desktop\GithubProjects\ProjectTERRA\images\GREEN.TIF'
+# PostgreSQL veritabanı bilgileri
+db_params = {
+    'dbname': 'your_database',
+    'user': 'your_username',
+    'password': 'your_password',
+    'host': 'localhost',  # Veritabanı sunucusu
+    'port': '5432'        # PostgreSQL portu
+}
+
+# Her bir bandı temsil eden TIFF dosyalarının yolları
+red_band_file = r'images/RED.TIF'
+nir_band_file = r'images/NIR.TIF'  # Near-Infrared (NIR) band
+green_band_file = r'images/GREEN.TIF'
+reg_band_file = r'images/REG.TIF'  # Red Edge band
 
 # NDVI hesaplama fonksiyonu
 def calculate_ndvi(red_band, nir_band):
-    ndvi = (nir_band.astype(float) - red_band.astype(float)) / (nir_band + red_band)
+    ndvi = (nir_band.astype(float) - red_band.astype(float)) / ((nir_band + red_band) + 1e-10)
     ndvi = np.clip(ndvi, -1, 1)
     return ndvi
 
-# VARI hesaplama fonksiyonu
-def calculate_vari(red_band, green_band, blue_band):
-    vari = (green_band.astype(float) - red_band.astype(float)) / (green_band + red_band - blue_band)
-    vari = np.clip(vari, -1, 1)
-    return vari
-
-# CWSI hesaplama fonksiyonu
-def calculate_cwsi(red_band, thermal_band):
-    cwsi = (thermal_band.astype(float) - red_band.astype(float)) / (thermal_band + red_band)
-    cwsi = np.clip(cwsi, -1, 1)
-    return cwsi
-
-# Veritabanı bağlantı ve tablo oluşturma fonksiyonu
-def create_connection(db_file):
-    conn = None
+# PostgreSQL'e bağlantı kurma
+def create_connection():
     try:
-        conn = sqlite3.connect(db_file)
-        print(f"SQLite versiyonu: {sqlite3.version}")
-    except sqlite3.Error as e:
-        print("DB Connection is being crashed")
-    return conn
+        conn = psycopg2.connect(**db_params)
+        print("PostgreSQL bağlantısı başarılı")
+        return conn
+    except psycopg2.Error as e:
+        print(f"Veritabanı bağlantı hatası: {e}")
+        return None
 
+# Tablo oluşturma fonksiyonu
 def create_table(conn):
     try:
-        sql_create_indices_table = """ CREATE TABLE IF NOT EXISTS indices_results (
-                                        id integer PRIMARY KEY,
-                                        file_name text NOT NULL,
-                                        mean_ndvi real,
-                                        mean_vari real,
-                                        mean_cwsi real
-                                    ); """
         cursor = conn.cursor()
-        cursor.execute(sql_create_indices_table)
-    except sqlite3.Error as e:
-        print(e)
+        create_table_query = '''CREATE TABLE IF NOT EXISTS indices_results (
+                                    id SERIAL PRIMARY KEY,
+                                    file_name TEXT NOT NULL,
+                                    mean_ndvi REAL,
+                                    mean_vari REAL,
+                                    mean_cwsi REAL
+                                );'''
+        cursor.execute(create_table_query)
+        conn.commit()
+        cursor.close()
+    except psycopg2.Error as e:
+        print(f"Tablo oluşturma hatası: {e}")
 
-# Veritabanına sonuç ekleme fonksiyonu
-def insert_indices_result(conn, file_name, mean_ndvi, mean_vari, mean_cwsi):
-    sql = ''' INSERT INTO indices_results(file_name, mean_ndvi, mean_vari, mean_cwsi)
-              VALUES(?,?,?,?) '''
-    cursor = conn.cursor()
-    cursor.execute(sql, (file_name, mean_ndvi, mean_vari, mean_cwsi))
-    conn.commit()
+# Sonuçları veritabanına ekleme fonksiyonu
+def insert_indices_result(conn, file_name, mean_ndvi):
+    try:
+        cursor = conn.cursor()
+        insert_query = '''INSERT INTO indices_results (file_name, mean_ndvi)
+                          VALUES (%s, %s);'''
+        cursor.execute(insert_query, (file_name, mean_ndvi))
+        conn.commit()
+        cursor.close()
+    except psycopg2.Error as e:
+        print(f"Veritabanına ekleme hatası: {e}")
 
 # Ana fonksiyon
 def main():
-    database = r'C:\Users\W10\Desktop\GithubProjects\ProjectTERRA\indices_results.db'
-    
-    # Veritabanı bağlantısı
-    conn = create_connection(database)
+    # PostgreSQL bağlantısı
+    conn = create_connection()
     
     # Tablo oluştur
     if conn is not None:
         create_table(conn)
     
-    with rasterio.open(tiff_file) as src:
-        print(f"Toplam bant sayısı: {src.count}")
+    # Her bandı ayrı dosyalardan oku
+    with rasterio.open(red_band_file) as red_src, \
+         rasterio.open(nir_band_file) as nir_src, \
+         rasterio.open(green_band_file) as green_src, \
+         rasterio.open(reg_band_file) as reg_src:
         
-        # Bant sayısına göre işlemler
-        if src.count >= 4:
-            red_band = src.read(3)    # Kırmızı bant
-            nir_band = src.read(4)    # Yakın kızılötesi bant
-            green_band = src.read(2)  # Yeşil bant
-            blue_band = src.read(1)   # Mavi bant
-            
-            # NDVI, VARI ve CWSI hesaplamaları
-            ndvi = calculate_ndvi(red_band, nir_band)
-            vari = calculate_vari(red_band, green_band, blue_band)
-            
-            # CWSI için termal bant kontrolü
-            if src.count >= 5:
-                thermal_band = src.read(5) # Termal bant (örnek olarak bant 5)
-                cwsi = calculate_cwsi(red_band, thermal_band)
-                mean_cwsi = cwsi.mean()
-            else:
-                mean_cwsi = None
-        else:
-            print("Yeterli bant bulunmuyor. Hesaplamalar yapılamaz.")
-            return
+        red_band = red_src.read(1)
+        nir_band = nir_src.read(1)
+        green_band = green_src.read(1)
+        reg_band = reg_src.read(1)
         
-        # Ortalama değerleri hesapla
+        # NDVI hesapla
+        ndvi = calculate_ndvi(red_band, nir_band)
+        
+        # Ortalama NDVI değeri
         mean_ndvi = ndvi.mean()
-        mean_vari = vari.mean()
         
         # Sonuçları veritabanına ekle
         if conn is not None:
-            insert_indices_result(conn, tiff_file, mean_ndvi, mean_vari, mean_cwsi)
-            print(f"NDVI, VARI ve CWSI sonuçları veritabanına eklendi: {tiff_file}")
+            insert_indices_result(conn, nir_band_file, mean_ndvi)
+            print(f"NDVI sonucu PostgreSQL veritabanına eklendi: {nir_band_file}")
     
     # Bağlantıyı kapat
     if conn:
