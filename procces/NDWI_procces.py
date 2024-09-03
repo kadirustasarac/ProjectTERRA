@@ -18,11 +18,11 @@ def calculate_ndwi(nir_image, green_image):
     return ndwi
 
 
-def plot_ndwi(ndvi):
+def plot_ndwi(ndwi):
     colors = [(0.6, 0.3, 0.2), (0.8, 0.9, 0.4), (0.2, 0.4, 1.0)]
     cmap = LinearSegmentedColormap.from_list("ndwi_cmap", colors, N=256)
     plt.figure(figsize=(10, 10))
-    plt.imshow(ndvi, cmap=cmap)
+    plt.imshow(ndwi, cmap=cmap)
     plt.colorbar(label='NDWI')
     plt.title('NDWI Haritası')
     plt.show()

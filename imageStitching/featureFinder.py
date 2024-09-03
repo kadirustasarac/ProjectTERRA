@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 
 # Görüntüleri yükleme
-img1 = cv2.imread('images/first.JPG', 0)  # İlk görüntü
-img2 = cv2.imread('images/second.JPG', 0)  # İkinci görüntü
+img1 = cv2.imread('image1.JPG', 0)
+img2 = cv2.imread('image2.JPG', 0)
 
 # Görüntülerin doğru yüklenip yüklenmediğini kontrol etme
 if img1 is None or img2 is None:
