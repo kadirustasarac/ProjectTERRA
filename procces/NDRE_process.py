@@ -22,7 +22,6 @@ def calculate_ndre(nir_image, red_edge_image):
     # Görüntüleri float32 formatına dönüştür
     nir = nir_image.astype(np.float32)
     red_edge = red_edge_image.astype(np.float32)
-    
     # NDRE hesaplama
     valOfNDRE = (nir - red_edge) / (nir + red_edge)
     

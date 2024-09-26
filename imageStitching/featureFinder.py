@@ -1,60 +1,41 @@
 import cv2
 import numpy as np
 
-# Görüntüleri yükleme
-img1 = cv2.imread('image1.JPG', 0)
-img2 = cv2.imread('image2.JPG', 0)
+# Görüntüleri yükle
+image1 = cv2.imread('image1.jpg')
+image2 = cv2.imread('image2.jpg')
 
-# Görüntülerin doğru yüklenip yüklenmediğini kontrol etme
-if img1 is None or img2 is None:
-    print("Görüntüler yüklenemedi. Dosya yolunu kontrol edin.")
-    exit()
+width_to_scale = 800
+height_to_scale = 600
 
-# SIFT detektörü oluşturma
+image1 = cv2.resize(image1,(width_to_scale,height_to_scale))
+image2 = cv2.resize(image2,(width_to_scale,height_to_scale))
+# SIFT ile özellik noktaları bul
 sift = cv2.SIFT_create()
+keypoints1, descriptors1 = sift.detectAndCompute(image1, None)
+keypoints2, descriptors2 = sift.detectAndCompute(image2, None)
 
-# Anahtar noktaları ve tanımlayıcıları bulma
-keypoints1, descriptors1 = sift.detectAndCompute(img1, None)
-keypoints2, descriptors2 = sift.detectAndCompute(img2, None)
+# BFMatcher ile noktaları eşleştir
+bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+matchings = bf.match(descriptors1, descriptors2)
 
-# Tanımlayıcıların boş olup olmadığını kontrol etme
-if descriptors1 is None or descriptors2 is None:
-    print("Özellik bulunamadı, lütfen görüntülerin yeterince detay içerdiğinden emin olun.")
-    exit()
+# Eşleşmeleri sırala
+matchings = sorted(matchings, key = lambda x:x.distance)
 
-# BFMatcher oluşturma ve özellik eşleştirme
-bf = cv2.BFMatcher()
-matches = bf.knnMatch(descriptors1, descriptors2, k=2)
-
-# İyi eşleşmeleri seçme
-good_matches = []
-for m, n in matches:
-    if m.distance < 0.75 * n.distance:
-        good_matches.append(m)
-
-# Eşleşen noktaların sayısını kontrol etme
-if len(good_matches) < 10:
-    print("Yeterli iyi eşleşme bulunamadı.")
-    exit()
-
-# Eşleşen noktaları bulma
-src_pts = np.float32([keypoints1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
-dst_pts = np.float32([keypoints2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
-
-# Homografi matrisini bulma
+# En iyi eşleşmeleri kullanarak homografi hesapla
+src_pts = np.float32([ keypoints1[m.queryIdx].pt for m in matchings ]).reshape(-1,1,2)
+dst_pts = np.float32([ keypoints2[m.trainIdx].pt for m in matchings ]).reshape(-1,1,2)
 H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
-# Görüntü 2'yi hizalama (warp)
-height, width = img1.shape
-img2_aligned = cv2.warpPerspective(img2, H, (width + img2.shape[1], height))
+# Görüntüyü döndür ve yeniden yerleştir
+height, width, channels = image2.shape
+image1_warped = cv2.warpPerspective(image1, H, (width, height))
 
-# Görüntü 1'i yerleştirme
-img2_aligned[0:height, 0:width] = img1
+# Görüntüleri birleştir
+result = np.maximum(image1_warped, image2)
 
-# Sonucu gösterme
-cv2.imshow("Birleşmiş Görüntü", img2_aligned)
+# Sonucu görselleştir
+cv2.imshow('Mosaic', result)
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
-# Sonucu kaydetme
-cv2.imwrite('stitched_image.jpg', img2_aligned)
