@@ -35,8 +35,7 @@ def process_images_and_generate_ndvi(nir_image_path, red_image_path):
         red_band = red_src.read(1)
 
     ndvi_image = calculate_ndvi(nir_band, red_band)
-    plot_ndvi(ndvi_image)
 
 # Örnek kullanım
-process_images_and_generate_ndvi('images/NIR.TIF', 'images/RED.TIF')
+process_images_and_generate_ndvi('images/final/nir.TIF', 'images/final/red.TIF')
 

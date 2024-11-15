@@ -136,9 +136,10 @@ def finalMethod(imageList):
 
 
 
-imageFinal = finalMethod(imageList)
-plt.imshow(imageFinal)
-plt.show()
+if __name__ == "__main__":
+    imageFinal = finalMethod(imageList)
+    plt.imshow(imageFinal)
+    plt.show()
 
 
 

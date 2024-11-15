@@ -30,7 +30,7 @@ def plot_clg(clg):
 def process_images_and_generate_clg(nir_image_path, red_image_path):
     with rasterio.open(nir_image_path) as nir_src:
         nir_band = nir_src.read(1)
-
+def progress_image_sensoring():
     with rasterio.open(red_image_path) as red_src:
         red_band = red_src.read(1)
 

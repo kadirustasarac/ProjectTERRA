@@ -39,4 +39,3 @@ def process_images_and_generate_bai(nir_image_path, red_image_path):
 
 # Örnek kullanım
 process_images_and_generate_bai('images/NIR.TIF', 'images/RED.TIF')
-
